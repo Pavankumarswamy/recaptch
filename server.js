@@ -6,7 +6,7 @@ app.use(express.json());
 
 app.post('/verify-recaptcha', async (req, res) => {
   const { token } = req.body;
-  const secretKey = '6LfTc1orAAAAAG5q5VUSMlz2DwxsMx1kCG7KR1jQ'; // Replace with your actual secret
+  const secretKey = '6LdNglorAAAAAFkjoKZULPMXpFAkI9qUlinBkHWV'; // Replace with your actual secret
 
   try {
     const response = await axios.post('https://www.google.com/recaptcha/api/siteverify', null, {
