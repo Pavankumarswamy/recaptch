@@ -1,15 +1,15 @@
-// script.js - Express server to verify reCAPTCHA v3 token
+// script.js - Express server to verify reCAPTCHA v2 token
 
 const express = require('express');
 const bodyParser = require('body-parser');
-const fetch = require('node-fetch'); // If you're on Node.js 18+, you can remove this and use global fetch
+const fetch = require('node-fetch');
 const cors = require('cors');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3000; // Use Render's port or fallback to 3000
 
-// Replace with your actual reCAPTCHA secret key
-const RECAPTCHA_SECRET_KEY = '6Lf-hVorAAAAAHyl87kpEwR2RIEOSraqsuQg4TCk';
+// Use the correct reCAPTCHA v2 secret key
+const RECAPTCHA_SECRET_KEY = '6LfTc1orAAAAAG5q5VUSMlz2DwxsMx1kCG7KR1jQ';
 
 app.use(cors());
 app.use(bodyParser.json());
@@ -24,7 +24,6 @@ app.post('/verify-recaptcha', async (req, res) => {
 
   try {
     const verificationURL = `https://www.google.com/recaptcha/api/siteverify?secret=${RECAPTCHA_SECRET_KEY}&response=${token}`;
-
     const response = await fetch(verificationURL, { method: 'POST' });
     const data = await response.json();
 
@@ -32,16 +31,11 @@ app.post('/verify-recaptcha', async (req, res) => {
       return res.status(400).json({
         success: false,
         message: 'Failed reCAPTCHA verification',
-        score: data.score || 0,
-        errors: data['error-codes']
+        errors: data['error-codes'],
       });
     }
 
-    return res.json({
-      success: true,
-      score: data.score,
-      action: data.action
-    });
+    return res.json({ success: true }); // Simplified for v2
 
   } catch (error) {
     console.error('Verification Error:', error);
