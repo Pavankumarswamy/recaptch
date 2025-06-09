@@ -1,32 +1,36 @@
-const express = require('express');
-const axios = require('axios');
-const app = express();
+// script.js
 
-app.use(express.json());
-
-app.post('/verify-recaptcha', async (req, res) => {
-  const { token } = req.body;
-  const secretKey = '6LdNglorAAAAAFkjoKZULPMXpFAkI9qUlinBkHWV'; // Replace with your actual secret
-
-  try {
-    const response = await axios.post('https://www.google.com/recaptcha/api/siteverify', null, {
-      params: {
-        secret: secretKey,
-        response: token,
-      },
-    });
-
-    const { success, 'error-codes': errorCodes } = response.data;
-    if (success) {
-      res.json({ success: true });
+function onSubmit(token) {
+  // Send token to your Flutter backend
+  fetch("https://your-backend-url.com/verify-recaptcha", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      token: token
+    })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success && data.score >= 0.5) {
+      console.log("✅ reCAPTCHA passed with score", data.score);
+      // You can notify Flutter app from here using postMessage if using WebView
     } else {
-      console.error('reCAPTCHA verification failed:', errorCodes);
-      res.json({ success: false, errorCodes });
+      console.warn("⚠️ reCAPTCHA failed or suspicious (score:", data.score, ")");
     }
-  } catch (error) {
-    console.error('Error verifying reCAPTCHA:', error.message);
-    res.status(500).json({ success: false, error: 'Server error' });
-  }
-});
+  })
+  .catch(err => {
+    console.error("🚫 Error verifying reCAPTCHA:", err);
+  });
+}
 
-app.listen(3000, () => console.log('Server running on port 3000'));
+function runRecaptcha() {
+  grecaptcha.ready(function () {
+    grecaptcha.execute('6Lf-hVorAAAAALJmAB_kKL2acu_J9jFYdDKSumu5', { action: 'submit' })
+      .then(function (token) {
+        console.log("🔑 Token received:", token);
+        onSubmit(token);
+      });
+  });
+}
